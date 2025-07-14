@@ -1,0 +1,50 @@
+import React from 'react';
+
+const MobileSecurityService = ({ onSelectMobileService }) => {
+  const mobileServices = [
+    {
+      id: 'escoltaVip',
+      title: 'Escolta VIP',
+      description: 'Protección personal de alto nivel para figuras públicas y ejecutivos.',
+    },
+    {
+      id: 'escoltaPorHoras',
+      title: 'Escolta por Horas',
+      description: 'Servicio de escolta flexible adaptado a tus necesidades de tiempo.',
+    },
+    {
+      id: 'supervisionAliada',
+      title: 'Supervisión Aliada',
+      description: 'Supervisión discreta y efectiva para eventos o situaciones específicas.',
+    },
+  ];
+
+  return (
+    <section 
+      className="p-8 min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url('https://4tsix0yujj.ufs.sh/f/2vMRHqOYUHc0fgZUtp3c6iCVp94hHM5LR1QUayJxrzbk73XZ')" }}
+    >
+      <div className="max-w-4xl w-full bg-white bg-opacity-90 p-8 rounded-2xl shadow-xl border border-red-100 text-center">
+        <h2 className="text-4xl font-bold text-gray-900 mb-8">Seguridad Mobile</h2>
+        <p className="text-lg text-gray-600 mb-10">
+          Elige el servicio de seguridad móvil que mejor se adapte a tus requerimientos.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {mobileServices.map((service) => (
+            <div 
+              key={service.id}
+              onClick={() => onSelectMobileService(service.id)}
+              className="bg-red-50 p-6 rounded-xl shadow-md border border-red-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+            >
+              <h3 className="text-2xl font-semibold text-gray-800 mb-3">{service.title}</h3>
+              <p className="text-gray-700">{service.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default MobileSecurityService;
