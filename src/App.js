@@ -1,26 +1,33 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
 import LayoutHeader from './components/LayoutHeader';
 import HomeSection from './components/HomeSection';
-import RegisterPersonForm from './components/RegisterPersonForm';
-import ClientLoginModal from './components/ClientLoginModal';
 import NotificationCenter from './components/NotificationCenter';
-import AdvisorChatModal from './components/AdvisorChatModal';
 import FooterSection from './components/FooterSection';
 import FloatingActionButton from './components/FloatingActionButton';
-import WorkWithUsSection from './components/WorkWithUsSection';
-import JobApplicationProcess from './components/JobApplicationProcess';
-import ClientDashboard from './components/ClientDashboard';
-import ElectronicSecurityService from './components/ElectronicSecurityService';
-import MobileSecurityService from './components/MobileSecurityService';
-import EscoltaVipService from './components/EscoltaVipService';
-import EscoltaPorHorasService from './components/EscoltaPorHorasService';
-import SupervisionAliadaService from './components/SupervisionAliadaService';
-import EmployeeLoginModal from './components/EmployeeLoginModal';
-import EmployeeDashboard from './components/EmployeeDashboard';
-import DocumentUploadOptions from './components/DocumentUploadOptions';
-import MonthlyBenefitsUpload from './components/MonthlyBenefitsUpload';
-import PreIngressTraining from './components/PreIngressTraining';
-import VigilanteTrainingModules from './components/VigilanteTrainingModules';
+
+const RegisterPersonForm = lazy(() => import('./components/RegisterPersonForm'));
+const ClientLoginModal = lazy(() => import('./components/ClientLoginModal'));
+const AdvisorChatModal = lazy(() => import('./components/AdvisorChatModal'));
+const WorkWithUsSection = lazy(() => import('./components/WorkWithUsSection'));
+const JobApplicationProcess = lazy(() => import('./components/JobApplicationProcess'));
+const ClientDashboard = lazy(() => import('./components/ClientDashboard'));
+const ElectronicSecurityService = lazy(() => import('./components/ElectronicSecurityService'));
+const MobileSecurityService = lazy(() => import('./components/MobileSecurityService'));
+const EscoltaVipService = lazy(() => import('./components/EscoltaVipService'));
+const EscoltaPorHorasService = lazy(() => import('./components/EscoltaPorHorasService'));
+const SupervisionAliadaService = lazy(() => import('./components/SupervisionAliadaService'));
+const EmployeeLoginModal = lazy(() => import('./components/EmployeeLoginModal'));
+const EmployeeDashboard = lazy(() => import('./components/EmployeeDashboard'));
+const DocumentUploadOptions = lazy(() => import('./components/DocumentUploadOptions'));
+const MonthlyBenefitsUpload = lazy(() => import('./components/MonthlyBenefitsUpload'));
+const PreIngressTraining = lazy(() => import('./components/PreIngressTraining'));
+const VigilanteTrainingModules = lazy(() => import('./components/VigilanteTrainingModules'));
+
+const PageFallback = ({ message = 'Cargando...' }) => (
+  <div className="flex items-center justify-center py-16">
+    <span className="text-gray-600 text-sm font-medium">{message}</span>
+  </div>
+);
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
@@ -30,67 +37,69 @@ const App = () => {
   const [selectedJobPosition, setSelectedJobPosition] = useState(null);
   const [loggedInClient, setLoggedInClient] = useState(null);
   const [loggedInEmployee, setLoggedInEmployee] = useState(null);
-  const [selectedClientService, setSelectedClientService] = useState(null);
-  const [selectedEmployeeUploadType, setSelectedEmployeeUploadType] = useState(null);
-  const [selectedTrainingProfile, setSelectedTrainingProfile] = useState(null);
 
-  const navigateTo = (page) => {
+  const isClientLoggedIn = Boolean(loggedInClient);
+  const isEmployeeLoggedIn = Boolean(loggedInEmployee);
+
+  const navigateTo = useCallback((page) => {
     setCurrentPage(page);
     setShowLoginModal(false);
     setShowEmployeeLoginModal(false);
     setShowAdvisorChat(false);
     setSelectedJobPosition(null);
-    setSelectedClientService(null);
-    setSelectedEmployeeUploadType(null);
-    setSelectedTrainingProfile(null);
-  };
+  }, []);
 
-  const handleLoginClick = () => {
+  const handleLoginClick = useCallback(() => {
     setShowLoginModal(true);
-  };
+  }, []);
 
-  const handleLoginSuccess = (username) => {
+  const handleLoginSuccess = useCallback((username) => {
     setShowLoginModal(false);
-    setLoggedInClient(username);
-    setCurrentPage('clientDashboard');
-  };
+    if (username) {
+      setLoggedInClient(username);
+      setCurrentPage('clientDashboard');
+    }
+  }, []);
 
-  const handleEmployeeLoginClick = () => {
+  const handleEmployeeLoginClick = useCallback(() => {
     setShowEmployeeLoginModal(true);
-  };
+  }, []);
 
-  const handleEmployeeLoginSuccess = (username) => {
+  const handleEmployeeLoginSuccess = useCallback((username) => {
     setShowEmployeeLoginModal(false);
     if (username) {
       setLoggedInEmployee(username);
       setCurrentPage('employeeDashboard');
     }
-  };
+  }, []);
 
-  const handleContactAdvisor = () => {
+  const handleContactAdvisor = useCallback(() => {
     setShowAdvisorChat(true);
-  };
+  }, []);
 
-  const handleWorkWithUsClick = () => {
+  const closeAdvisorChat = useCallback(() => {
+    setShowAdvisorChat(false);
+  }, []);
+
+  const handleWorkWithUsClick = useCallback(() => {
     navigateTo('workWithUs');
-  };
+  }, [navigateTo]);
 
-  const handleSelectJobPosition = (position) => {
+  const handleSelectJobPosition = useCallback((position) => {
     setSelectedJobPosition(position);
     setCurrentPage('jobApplication');
-  };
+  }, []);
 
-  const handleBackToVacancies = () => {
+  const handleBackToVacancies = useCallback(() => {
     setSelectedJobPosition(null);
     navigateTo('workWithUs');
-  };
+  }, [navigateTo]);
 
-  const handleSelectClientService = (serviceId) => {
-    setSelectedClientService(serviceId);
+  const handleSelectClientService = useCallback((serviceId) => {
     setCurrentPage(serviceId);
-  };
+  }, []);
 
-  const handleEmployeeDashboardOption = (optionId) => {
+  const handleEmployeeDashboardOption = useCallback((optionId) => {
     if (optionId === 'cargaDocumentos') {
       setCurrentPage('documentUploadOptions');
     } else if (optionId === 'capacitacionPreIngreso') {
@@ -98,26 +107,133 @@ const App = () => {
     } else {
       alert(`Opción de empleado: ${optionId} (simulado)`);
     }
-  };
+  }, []);
 
-  const handleSelectUploadType = (typeId) => {
-    setSelectedEmployeeUploadType(typeId);
+  const handleSelectUploadType = useCallback((typeId) => {
     if (typeId === 'documentosMensualesBeneficios') {
       setCurrentPage('monthlyBenefitsUpload');
     } else {
       alert(`Carga de ${typeId} (simulado)`);
       setCurrentPage('documentUploadOptions');
     }
-  };
+  }, []);
 
-  const handleSelectTrainingProfile = (profileId) => {
-    setSelectedTrainingProfile(profileId);
+  const handleSelectTrainingProfile = useCallback((profileId) => {
     if (profileId === 'vigilantes') {
       setCurrentPage('vigilanteTrainingModules');
     } else {
       alert(`Módulos de capacitación para ${profileId} (simulado)`);
       setCurrentPage('preIngressTraining');
     }
+  }, []);
+
+  const goToEmployeeDashboard = useCallback(() => {
+    setCurrentPage('employeeDashboard');
+  }, []);
+
+  const goToDocumentUploadOptions = useCallback(() => {
+    setCurrentPage('documentUploadOptions');
+  }, []);
+
+  const goToPreIngressTraining = useCallback(() => {
+    setCurrentPage('preIngressTraining');
+  }, []);
+
+  const floatingButtonIcon = useMemo(
+    () => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+        />
+      </svg>
+    ),
+    []
+  );
+
+  const renderMainContent = () => {
+    if (!isClientLoggedIn && !isEmployeeLoggedIn && currentPage === 'home') {
+      return (
+        <HomeSection
+          onLoginClick={handleLoginClick}
+          onWorkWithUsClick={handleWorkWithUsClick}
+          onEmployeeLoginClick={handleEmployeeLoginClick}
+        />
+      );
+    }
+
+    if (currentPage === 'register') {
+      return <RegisterPersonForm />;
+    }
+
+    if (currentPage === 'workWithUs') {
+      return <WorkWithUsSection onSelectPosition={handleSelectJobPosition} />;
+    }
+
+    if (currentPage === 'jobApplication') {
+      return (
+        <JobApplicationProcess
+          position={selectedJobPosition}
+          onBack={handleBackToVacancies}
+        />
+      );
+    }
+
+    if (isClientLoggedIn) {
+      switch (currentPage) {
+        case 'clientDashboard':
+          return <ClientDashboard onSelectService={handleSelectClientService} />;
+        case 'seguridadElectronica':
+          return <ElectronicSecurityService onContactAdvisor={handleContactAdvisor} />;
+        case 'seguridadMobile':
+          return <MobileSecurityService onSelectMobileService={handleSelectClientService} />;
+        case 'escoltaVip':
+          return <EscoltaVipService onContactAdvisor={handleContactAdvisor} />;
+        case 'escoltaPorHoras':
+          return <EscoltaPorHorasService onContactAdvisor={handleContactAdvisor} />;
+        case 'supervisionAliada':
+          return <SupervisionAliadaService />;
+        default:
+          return null;
+      }
+    }
+
+    if (isEmployeeLoggedIn) {
+      switch (currentPage) {
+        case 'employeeDashboard':
+          return <EmployeeDashboard onSelectOption={handleEmployeeDashboardOption} />;
+        case 'documentUploadOptions':
+          return (
+            <DocumentUploadOptions
+              onSelectUploadType={handleSelectUploadType}
+              onBack={goToEmployeeDashboard}
+            />
+          );
+        case 'monthlyBenefitsUpload':
+          return <MonthlyBenefitsUpload onBack={goToDocumentUploadOptions} />;
+        case 'preIngressTraining':
+          return (
+            <PreIngressTraining
+              onSelectProfile={handleSelectTrainingProfile}
+              onBack={goToEmployeeDashboard}
+            />
+          );
+        case 'vigilanteTrainingModules':
+          return <VigilanteTrainingModules onBack={goToPreIngressTraining} />;
+        default:
+          return null;
+      }
+    }
+
+    return null;
   };
 
   return (
@@ -125,75 +241,33 @@ const App = () => {
       <LayoutHeader onNavigate={navigateTo} currentPage={currentPage} />
 
       <main className="flex-grow">
-        {currentPage === 'home' && !loggedInClient && !loggedInEmployee && (
-          <HomeSection 
-            onLoginClick={handleLoginClick} 
-            onWorkWithUsClick={handleWorkWithUsClick} 
-            onEmployeeLoginClick={handleEmployeeLoginClick}
-          />
-        )}
-
-        {loggedInClient && currentPage === 'clientDashboard' && (
-          <ClientDashboard onSelectService={handleSelectClientService} />
-        )}
-        {loggedInClient && currentPage === 'seguridadElectronica' && (
-          <ElectronicSecurityService onContactAdvisor={handleContactAdvisor} />
-        )}
-        {loggedInClient && currentPage === 'seguridadMobile' && (
-          <MobileSecurityService onSelectMobileService={handleSelectClientService} />
-        )}
-        {loggedInClient && currentPage === 'escoltaVip' && (
-          <EscoltaVipService onContactAdvisor={handleContactAdvisor} />
-        )}
-        {loggedInClient && currentPage === 'escoltaPorHoras' && (
-          <EscoltaPorHorasService onContactAdvisor={handleContactAdvisor} />
-        )}
-        {loggedInClient && currentPage === 'supervisionAliada' && (
-          <SupervisionAliadaService />
-        )}
-
-        {loggedInEmployee && currentPage === 'employeeDashboard' && (
-          <EmployeeDashboard onSelectOption={handleEmployeeDashboardOption} />
-        )}
-        {loggedInEmployee && currentPage === 'documentUploadOptions' && (
-          <DocumentUploadOptions onSelectUploadType={handleSelectUploadType} onBack={() => setCurrentPage('employeeDashboard')} />
-        )}
-        {loggedInEmployee && currentPage === 'monthlyBenefitsUpload' && (
-          <MonthlyBenefitsUpload onBack={() => setCurrentPage('documentUploadOptions')} />
-        )}
-        {loggedInEmployee && currentPage === 'preIngressTraining' && (
-          <PreIngressTraining onSelectProfile={handleSelectTrainingProfile} onBack={() => setCurrentPage('employeeDashboard')} />
-        )}
-        {loggedInEmployee && currentPage === 'vigilanteTrainingModules' && (
-          <VigilanteTrainingModules onBack={() => setCurrentPage('preIngressTraining')} />
-        )}
-
-        {currentPage === 'register' && <RegisterPersonForm />}
-        {currentPage === 'workWithUs' && (
-          <WorkWithUsSection onSelectPosition={handleSelectJobPosition} />
-        )}
-        {currentPage === 'jobApplication' && (
-          <JobApplicationProcess 
-            position={selectedJobPosition} 
-            onBack={handleBackToVacancies} 
-          />
-        )}
+        <Suspense fallback={<PageFallback message="Cargando sección..." />}>
+          {renderMainContent()}
+        </Suspense>
       </main>
 
       <NotificationCenter />
 
-      {showLoginModal && <ClientLoginModal onClose={handleLoginSuccess} />}
-      {showEmployeeLoginModal && <EmployeeLoginModal onClose={handleEmployeeLoginSuccess} />}
-      {showAdvisorChat && <AdvisorChatModal onClose={() => setShowAdvisorChat(false)} />}
+      {showLoginModal && (
+        <Suspense fallback={null}>
+          <ClientLoginModal onClose={handleLoginSuccess} />
+        </Suspense>
+      )}
+      {showEmployeeLoginModal && (
+        <Suspense fallback={null}>
+          <EmployeeLoginModal onClose={handleEmployeeLoginSuccess} />
+        </Suspense>
+      )}
+      {showAdvisorChat && (
+        <Suspense fallback={null}>
+          <AdvisorChatModal onClose={closeAdvisorChat} />
+        </Suspense>
+      )}
 
       <FloatingActionButton
-        onClick={() => setShowAdvisorChat(true)}
+        onClick={handleContactAdvisor}
         label="Contactar Asesora"
-        icon={
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
-        }
+        icon={floatingButtonIcon}
       />
 
       <FooterSection />
